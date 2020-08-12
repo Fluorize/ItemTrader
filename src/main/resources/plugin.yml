@@ -1,0 +1,11 @@
+name: ItemTrader
+version: ${project.version}
+main: com.gmail.supergame314.itemtrader.ItemTrader
+api-version: 1.13
+authors: [Super__Game]
+commands:
+  trade:
+    permission: itemTrader.canTrade
+permissions:
+  itemTrader.canTrade:
+    default: true
