@@ -36,7 +36,6 @@ public class VaultManager {
 
     private boolean setupEconomy() {
 
-        plugin.getLogger().info("setupEconomy");
 
         if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
 
@@ -58,9 +57,8 @@ public class VaultManager {
 
         economy = rsp.getProvider();
 
-        plugin.getLogger().info("Economy setup");
 
-        return economy != null;
+        return true;
 
     }
 

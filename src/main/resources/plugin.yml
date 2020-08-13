@@ -9,3 +9,5 @@ commands:
 permissions:
   itemTrader.canTrade:
     default: true
+  itemTrader.aboutPermission:
+    default: op

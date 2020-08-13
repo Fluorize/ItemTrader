@@ -13,14 +13,20 @@ import java.util.*;
 
 import static com.gmail.supergame314.itemtrader.ItemTrader.*;
 
+
+
 public class MatchSystem {
 
     static List<MatchSystem> matchList = new ArrayList<>();
 
+    private List<Player> chat = new ArrayList<>();
     private Player from;
     private Player to;
+    private double fromMoney;
+    private double toMoney;
 
     /**
+     *
      * processF is process of player "from"
      * processT is process of player "to"
      *
@@ -94,17 +100,21 @@ public class MatchSystem {
         new BukkitRunnable(){
             @Override
             public void run(){
-                if(processT!=0)return;
+                MatchSystem ms = getMatchF(from);
+                if(ms == null)return;
+                if(ms.processT!=0)return;
                 from.sendMessage(prefix+"§c§l取引の有効期限が切れました");
                 to.sendMessage(prefix+"§c§l取引の有効期限が切れました");
+                matchList.remove(getMatchF(from));
             }
-        }.runTaskLater(it,20*10*2);
+        }.runTaskLater(it,20*10);
     }
 
     public void accept(){
         processT = 1;
         inventory = Bukkit.createInventory(null,54,"[ITrader] 取引");
-        inventory.setItem(27,getItem(Material.GOLD_INGOT,1,"お金","§7クリックしてチャットで金額を入力します"));
+        inventory.setItem(27,getItem(Material.GOLD_INGOT,1,"§6§lお金","§7クリックしてチャットで金額を入力します"));
+        inventory.setItem(35,getItem(Material.GOLD_INGOT,1,"§6§lお金","§7クリックしてチャットで金額を入力します"));
         gui(processF,processT);
         for (int i = 4;i<54;i+=9){
             inventory.setItem(i,getItem(Material.WHITE_STAINED_GLASS_PANE,1,""));
@@ -113,12 +123,14 @@ public class MatchSystem {
         SkullMeta m = (SkullMeta) i.getItemMeta();
         m.setOwningPlayer(from);
         i.setItemMeta(m);
-        inventory.setItem(45,i);
+        inventory.setItem(30,i);
         i = getItem(Material.PLAYER_HEAD,1,"§e§l"+to.getName());
         m = (SkullMeta) i.getItemMeta();
         m.setOwningPlayer(to);
         i.setItemMeta(m);
-        inventory.setItem(53,getItem(Material.PLAYER_HEAD,1,"§e§l"+to.getName()));
+        inventory.setItem(32,i);
+        from.openInventory(inventory);
+        to.openInventory(inventory);
     }
 
     public void refuse(){
@@ -130,7 +142,17 @@ public class MatchSystem {
     public void clickInv(InventoryClickEvent event){
         Player p = (Player) event.getWhoClicked();
         int slot = event.getSlot();
-        if(36<=slot && slot<45){
+        if(27<=slot && slot<36){
+            if(slot == 27 && p==from) {
+                setChatting(p);
+                p.sendMessage(prefix+"§a§l金額を入力してください");
+                p.closeInventory();
+            }
+            if(slot == 35 && p==to) {
+                setChatting(p);
+                p.sendMessage(prefix+"§a§l金額を入力してください");
+                p.closeInventory();
+            }
             event.setCancelled(true);
             return;
         }
@@ -146,11 +168,12 @@ public class MatchSystem {
                 return;
             }
             if(36<=slot) {
+                event.setCancelled(true);
                 if (processF == 1) {
                     processF=2;
                 }else if (processF == 2) {
                     if(processT>=2) {
-                        if (slot % 9 >= 2) {
+                        if (slot % 9 < 2) {
                             processF = 3;
                             if (processT == 3) {
                                 finish();
@@ -166,6 +189,8 @@ public class MatchSystem {
                     }
                 }
                 gui(processF,processT);
+            }else if(processF != 1){
+                event.setCancelled(true);
             }
         }else{
             //右側
@@ -175,11 +200,12 @@ public class MatchSystem {
                 return;
             }
             if(36<=slot) {
+                event.setCancelled(true);
                 if (processT == 1) {
                     processT=2;
                 }else if (processT == 2) {
                     if(processF>=2) {
-                        if (slot % 9 >= 2) {
+                        if (slot % 9 >= 7) {
                             processT = 3;
                             if (processF == 3) {
                                 finish();
@@ -195,11 +221,13 @@ public class MatchSystem {
                     }
                 }
                 gui(processF,processT);
+            }else if(processT != 1){
+                event.setCancelled(true);
             }
         }
+
         from.updateInventory();
         to.updateInventory();
-
     }
 
 
@@ -214,18 +242,18 @@ public class MatchSystem {
                 }
                 break;
             case 2:
-                if(processT==2) {
+                if(processT>=2) {
                     for (int i = 36; i < 40;i++) {
                         if (i % 9 <= 1)
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
                         else
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
                     }
                     for (int i = 45; i < 49;i++) {
                         if (i % 9 <= 1)
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
                         else
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
                     }
                 }else{
                     for (int i = 36; i < 40; i++) {
@@ -255,18 +283,18 @@ public class MatchSystem {
                 }
                 break;
             case 2:
-                if(processF==2) {
+                if(processF>=2) {
                     for (int i = 41; i < 45; i++) {
-                        if (i % 9 <= 7)
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                        if (i % 9 <= 6)
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
                         else
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
                     }
                     for (int i = 50; i < 54; i++) {
-                        if (i % 9 <= 7)
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                        if (i % 9 <= 6)
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
                         else
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
                     }
                 }else {
                     for (int i = 41; i < 45; i++) {
@@ -290,21 +318,101 @@ public class MatchSystem {
 
     }
 
-    private void finish(){
-        List<ItemStack> items = new ArrayList<>();
-        for(int i =0;i<36;i++){
-            if(i%9>4) items.add(inventory.getItem(i));
+    public void setChatting(Player p){
+        chat.add(p);
+    }
+
+
+    public boolean isChatting(Player p){
+        return chat.contains(p);
+    }
+
+    public void chat(Player p,String msg){
+        if(!isChatting(p))return;
+        final MatchSystem ms1 = getMatchF(p);
+        try {
+            if (ms1 != null) {
+                fromMoney = Integer.parseInt(msg);
+                if(fromMoney>it.vault.getBalance(p.getUniqueId())) {
+                    p.sendMessage(prefix+"§c§l必要なお金を持っていません！");
+                    return;
+                }
+                if(fromMoney != 0)
+                    inventory.setItem(28,getItem(Material.GOLD_NUGGET,1,"§6§l"+msg+"円","§7提示しています"));
+                else
+                    inventory.clear(28);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        p.openInventory(ms1.inventory);
+                    }
+                }.runTask(it);
+                chat.remove(p);
+                return;
+            }
+            final MatchSystem ms2 = getMatchT(p);
+            if (ms2 != null) {
+                toMoney = Integer.parseInt(msg);
+                if(fromMoney>it.vault.getBalance(p.getUniqueId())) {
+                    p.sendMessage(prefix+"§c§l必要なお金を持っていません！");
+                    return;
+                }
+                if(toMoney != 0)
+                    inventory.setItem(33,getItem(Material.GOLD_NUGGET,1,"§6§l"+msg+"円","§7提示しています"));
+                else
+                    inventory.clear(33);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        p.openInventory(ms2.inventory);
+                    }
+                }.runTask(it);
+                chat.remove(p);
+            }
+        }catch (NumberFormatException e){
+            p.sendMessage(prefix+"§c§l値が不正です！整数を入力してください");
         }
-        from.getInventory().addItem((ItemStack[]) items.toArray());
-        items = new ArrayList<>();
-        for(int i =0;i<36;i++){
+    }
+
+
+
+    public void cancelMatch(){
+        matchList.remove(this);
+        from.closeInventory();
+        to.closeInventory();
+        from.sendMessage(prefix+"§c§l片方がインベントリを閉じたため取引が中断されました");
+        to.sendMessage(prefix+"§c§l片方がインベントリを閉じたため取引が中断されました");
+        for(int i =0;i<27;i++){
+            if(inventory.getItem(i)==null)continue;
+            if(i%9>4){
+                to.getInventory().addItem(inventory.getItem(i));
+            }
             if(i%9<4){
-                items.add(inventory.getItem(i));
+                from.getInventory().addItem(inventory.getItem(i));
             }
         }
-        to.getInventory().addItem((ItemStack[]) items.toArray());
+    }
+
+
+
+    private void finish(){
+        for(int i =0;i<27;i++){
+            if(inventory.getItem(i)==null)continue;
+            if(i%9>4){
+                from.getInventory().addItem(inventory.getItem(i));
+            }
+            if(i%9<4){
+                to.getInventory().addItem(inventory.getItem(i));
+            }
+        }
+        it.vault.withdraw(from.getUniqueId(),fromMoney);
+        it.vault.deposit(to.getUniqueId(),fromMoney);
+        it.vault.withdraw(to.getUniqueId(),toMoney);
+        it.vault.deposit(from.getUniqueId(),toMoney);
         from.sendMessage(prefix+"§a§l取引が成立しました！");
         to.sendMessage(prefix+"§a§l取引が成立しました！");
         matchList.remove(this);
+        from.closeInventory();
+        to.closeInventory();
     }
 }

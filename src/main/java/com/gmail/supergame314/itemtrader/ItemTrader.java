@@ -5,6 +5,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,6 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,11 +26,12 @@ import java.util.Map;
 
 public final class ItemTrader extends JavaPlugin implements Listener {
 
-    public VaultManager vault = new VaultManager(this);
+    public VaultManager vault;
 
 
     static String prefix = "§f§l[§2§lI§7§lTrade§f§l]";
     static boolean isEnable = true;
+    static int ver;
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -40,34 +44,51 @@ public final class ItemTrader extends JavaPlugin implements Listener {
                 sender.sendMessage(prefix+"§c§l このコマンドはプレイヤー専用です。");
                 return true;
             }
-            if(args.length<=1){
-                sender.sendMessage(prefix+"§2§l TRADEコマンド -- 他のプレイヤーとアイテムを交換します");
-                sender.sendMessage(prefix+"§2 >>>使い方 /trade new プレイヤー");
-                return true;
-            }
-            Player target = getServer().getPlayer(args[1]);
             Player p = (Player) sender;
-            if(args[0].equals("new")) {
-                if (target == null) {
-                    sender.sendMessage(prefix + "§c§l プレイヤー、§e§l" + args[1] + "§c§lは見つかりませんでした");
-                    return true;
-                }
-                new MatchSystem(p,target);
-                target.sendMessage(prefix + "§e§l" + p.getName() + "§aによってトレードに誘われました。");
-            }else if(args[0].equals("acc")){
+            if(args.length != 0 && args[0].equals("acc")){
                 MatchSystem ms = MatchSystem.getMatchT(p);
                 if(ms!=null){
                     ms.accept();
                     return true;
                 }
 
-            }else if(args[0].equals("ref")){
+            }else if(args.length != 0 && args[0].equals("ref")){
                 MatchSystem ms = MatchSystem.getMatchT(p);
                 if(ms!=null){
                     ms.refuse();
                     return true;
                 }
-
+            }
+            if(args.length<=1){
+                sender.sendMessage(prefix+"§2§l================================================");
+                sender.sendMessage(prefix+"§2§l TRADEコマンド -- 他のプレイヤーとアイテムを交換します");
+                sender.sendMessage(prefix+"§2 >>>使い方 /trade new プレイヤー");
+                if(sender.isPermissionSet("itemTrader.aboutPermission")){
+                    sender.sendMessage(prefix+"§7 ---権限 itemTrader.canTrade");
+                }
+                sender.sendMessage(prefix+"§2§l================================================");
+                return true;
+            }
+            Player target = getServer().getPlayer(args[1]);
+            if(args[0].equals("new")) {
+                if (target == null) {
+                    sender.sendMessage(prefix + "§c§l プレイヤー、§e§l" + args[1] + "§c§lは見つかりませんでした");
+                    return true;
+                }
+                if(MatchSystem.getMatchF(p)!=null){
+                    sender.sendMessage(prefix+" §c§lあなたは他の取引を実行中です！");
+                    return true;
+                }
+                if(MatchSystem.getMatchT(target)!=null){
+                    sender.sendMessage(prefix+" §c§lその人は他の取引を実行中です！");
+                    return true;
+                }
+                if(p==target){
+                    sender.sendMessage(prefix+" §c§l自分と取引することはできません");
+                    return true;
+                }
+                new MatchSystem(p,target);
+                ask(target);
             }
         }
         return true;
@@ -79,8 +100,15 @@ public final class ItemTrader extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         isEnable = true;
+        vault = new VaultManager(this);
         getServer().getPluginManager().registerEvents(this,this);
         MatchSystem.setItemTrader(this);
+        ver = Integer.parseInt(getServer().getClass().getName().split("\\.")[3].split("_")[1]);
+        if(ver<=12){
+            isEnable=false;
+            getLogger().warning("This plugin is for 1.13 or later versions.");
+            getServer().getPluginManager().disablePlugin(this);
+        }
         // Plugin startup logic
     }
 
@@ -93,10 +121,38 @@ public final class ItemTrader extends JavaPlugin implements Listener {
     public void click(InventoryClickEvent event){
         MatchSystem ms = MatchSystem.getMatchI(event.getClickedInventory());
         if (ms != null){
+            if(event.isShiftClick()) {
+                event.setCancelled(true);
+                return;
+            }
             ms.clickInv(event);
         }
     }
 
+    @EventHandler
+    public void closeInv(InventoryCloseEvent event){
+        MatchSystem ms = MatchSystem.getMatchI(event.getInventory());
+        if(ms != null){
+            if(!ms.isChatting((Player) event.getPlayer()))
+                ms.cancelMatch();
+                //event.getPlayer().sendMessage("aaaa");
+        }
+    }
+
+    @EventHandler
+    public void chat(AsyncPlayerChatEvent event){
+        MatchSystem ms = MatchSystem.getMatchF(event.getPlayer());
+        if(ms != null){
+            event.setCancelled(true);
+            ms.chat(event.getPlayer(),event.getMessage());
+        }else {
+            ms = MatchSystem.getMatchT(event.getPlayer());
+            if (ms != null) {
+                event.setCancelled(true);
+                ms.chat(event.getPlayer(),event.getMessage());
+            }
+        }
+    }
 
 
     public static TextComponent getText(String text, String hoverText, String command, ChatColor color){
@@ -110,14 +166,11 @@ public final class ItemTrader extends JavaPlugin implements Listener {
         return tc;
     }
 
-    void askVdContinue(Player p, int diceTotal){
-        if(diceTotal<=1000){
-            p.sendMessage(prefix+"選択してください！！");
-            //TextComponent text=new TextComponent(DataClass.MSGs[2]);
-            TextComponent text=new TextComponent(getText("§l§n取引に応じる ","","/trade acc",ChatColor.GREEN));
-            text.addExtra(getText(" §l§n断る","続けます","/trade ref",ChatColor.RED));
-            p.spigot().sendMessage(text);
-        }
+    void ask(Player p){
+        TextComponent text=new TextComponent(prefix + "§e§l" + p.getName() + "§aに取引に誘われました。");
+        text.addExtra(getText("§l§n[応じる] ","取引する","/trade acc",ChatColor.GREEN));
+        text.addExtra(getText(" §l§n[断る]","取引しない","/trade ref",ChatColor.RED));
+        p.spigot().sendMessage(text);
     }
 
     static ItemStack getItem(Material m,int amount,String name,String... lore){
