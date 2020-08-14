@@ -22,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class ItemTrader extends JavaPlugin implements Listener {
@@ -182,4 +183,15 @@ public final class ItemTrader extends JavaPlugin implements Listener {
         return i;
     }
 
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if(!command.getName().equals("trade")){
+            return null;
+        }
+        if(args.length==0){
+            return Arrays.asList("new","acc","ref");
+        }else{
+            return null;
+        }
+    }
 }

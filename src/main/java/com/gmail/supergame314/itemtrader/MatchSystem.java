@@ -17,7 +17,7 @@ import static com.gmail.supergame314.itemtrader.ItemTrader.*;
 
 public class MatchSystem {
 
-    static List<MatchSystem> matchList = new ArrayList<>();
+    static private List<MatchSystem> matchList = new ArrayList<>();
 
     private List<Player> chat = new ArrayList<>();
     private Player from;
@@ -42,8 +42,8 @@ public class MatchSystem {
     private int processT = 0;
 
     private Inventory inventory;
+    static private ItemTrader it;
 
-    static ItemTrader it;
 
     static public void setItemTrader(ItemTrader it){
         MatchSystem.it = it;
@@ -189,6 +189,8 @@ public class MatchSystem {
                     }
                 }
                 gui(processF,processT);
+                from.updateInventory();
+                to.updateInventory();
             }else if(processF != 1){
                 event.setCancelled(true);
             }
@@ -221,13 +223,13 @@ public class MatchSystem {
                     }
                 }
                 gui(processF,processT);
+                from.updateInventory();
+                to.updateInventory();
             }else if(processT != 1){
                 event.setCancelled(true);
             }
         }
 
-        from.updateInventory();
-        to.updateInventory();
     }
 
 
