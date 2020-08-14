@@ -5,7 +5,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,15 +14,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class ItemTrader extends JavaPlugin implements Listener {
 
@@ -89,7 +84,7 @@ public final class ItemTrader extends JavaPlugin implements Listener {
                     return true;
                 }
                 new MatchSystem(p,target);
-                ask(target);
+                ask(p,target);
             }
         }
         return true;
@@ -167,11 +162,11 @@ public final class ItemTrader extends JavaPlugin implements Listener {
         return tc;
     }
 
-    void ask(Player p){
+    void ask(Player p,Player target){
         TextComponent text=new TextComponent(prefix + "§e§l" + p.getName() + "§aに取引に誘われました。");
         text.addExtra(getText("§l§n[応じる] ","取引する","/trade acc",ChatColor.GREEN));
         text.addExtra(getText(" §l§n[断る]","取引しない","/trade ref",ChatColor.RED));
-        p.spigot().sendMessage(text);
+        target.spigot().sendMessage(text);
     }
 
     static ItemStack getItem(Material m,int amount,String name,String... lore){
@@ -190,6 +185,19 @@ public final class ItemTrader extends JavaPlugin implements Listener {
         }
         if(args.length==0){
             return Arrays.asList("new","acc","ref");
+        }
+        if(args.length<=1) {
+            List<String> l = new ArrayList<>();
+            if ("new".startsWith(args[0])) {
+                l.add("new");
+            }
+            if ("acc".startsWith(args[0])) {
+                l.add("acc");
+            }
+            if ("ref".startsWith(args[0])) {
+                l.add("ref");
+            }
+            return l;
         }else{
             return null;
         }
