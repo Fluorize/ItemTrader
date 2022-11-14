@@ -1,5 +1,8 @@
 package com.gmail.supergame314.itemtrader;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,6 +13,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static com.gmail.supergame314.itemtrader.ItemTrader.*;
 
@@ -113,18 +117,18 @@ public class MatchSystem {
     public void accept(){
         processT = 1;
         inventory = Bukkit.createInventory(null,54,"[ITrader] 取引");
-        inventory.setItem(27,getItem(Material.GOLD_INGOT,1,"§6§lお金","§7クリックしてチャットで金額を入力します"));
-        inventory.setItem(35,getItem(Material.GOLD_INGOT,1,"§6§lお金","§7クリックしてチャットで金額を入力します"));
+        inventory.setItem(27,getItem(Material.GOLD_INGOT,1,Component.text("§6§lお金"),Component.text("§7クリックしてチャットで金額を入力します")));
+        inventory.setItem(35,getItem(Material.GOLD_INGOT,1,Component.text("§6§lお金"),Component.text("§7クリックしてチャットで金額を入力します")));
         gui(processF,processT);
         for (int i = 4;i<54;i+=9){
-            inventory.setItem(i,getItem(Material.WHITE_STAINED_GLASS_PANE,1,""));
+            inventory.setItem(i,getItem(Material.WHITE_STAINED_GLASS_PANE,1,Component.text("")));
         }
-        ItemStack i = getItem(Material.PLAYER_HEAD,1,"§e§l"+from.getName());
+        ItemStack i = getItem(Material.PLAYER_HEAD,1,Component.text("§e§l"+from.getName()));
         SkullMeta m = (SkullMeta) i.getItemMeta();
         m.setOwningPlayer(from);
         i.setItemMeta(m);
         inventory.setItem(30,i);
-        i = getItem(Material.PLAYER_HEAD,1,"§e§l"+to.getName());
+        i = getItem(Material.PLAYER_HEAD,1,Component.text("§e§l"+to.getName()));
         m = (SkullMeta) i.getItemMeta();
         m.setOwningPlayer(to);
         i.setItemMeta(m);
@@ -237,82 +241,82 @@ public class MatchSystem {
         switch (processF){
             case 1:
                 for (int i = 36;i<40;i++){
-                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,"§c§l取引内容変更中","§7完了したらここをクリックしてください"));
+                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,Component.text("§c§l取引内容変更中"),Component.text("§7完了したらここをクリックしてください")));
                 }
                 for (int i = 45;i<49;i++){
-                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,"§c§l取引内容変更中","§7完了したらここをクリックしてください"));
+                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,Component.text("§c§l取引内容変更中"),Component.text("§7完了したらここをクリックしてください")));
                 }
                 break;
             case 2:
                 if(processT>=2) {
                     for (int i = 36; i < 40;i++) {
                         if (i % 9 <= 1)
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認する"), Component.text("§7これでいいですか？")));
                         else
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, Component.text("§a§l承認する"), Component.text("§7これでいいですか？")));
                     }
                     for (int i = 45; i < 49;i++) {
                         if (i % 9 <= 1)
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認する"), Component.text("§7これでいいですか？")));
                         else
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, Component.text("§c§l承認しない"), Component.text("§7これでいいですか？")));
                     }
                 }else{
                     for (int i = 36; i < 40; i++) {
-                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§lOK!", "§7完了(クリックしてキャンセル)"));
+                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§lOK!"), Component.text("§7完了(クリックしてキャンセル)")));
                     }
                     for (int i = 45; i < 49; i++) {
-                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§lOK!", "§7完了(クリックしてキャンセル)"));
+                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§lOK!"), Component.text("§7完了(クリックしてキャンセル)")));
                     }
                 }
                 break;
             case 3:
                 for (int i = 36; i < 40; i++) {
-                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認!", "§7取引を認めました"));
+                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認!"), Component.text("§7取引を認めました")));
                 }
                 for (int i = 45; i < 49; i++) {
-                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認!", "§7取引を認めました"));
+                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認!"), Component.text("§7取引を認めました")));
                 }
                 break;
         }
         switch (processT){
             case 1:
                 for (int i = 41;i<45;i++){
-                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,"§c§l取引内容変更中","§7完了したらここをクリックしてください"));
+                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,Component.text("§c§l取引内容変更中"),Component.text("§7完了したらここをクリックしてください")));
                 }
                 for (int i = 50;i<54;i++){
-                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,"§c§l取引内容変更中","§7完了したらここをクリックしてください"));
+                    inventory.setItem(i,getItem(Material.RED_STAINED_GLASS_PANE,1,Component.text("§c§l取引内容変更中"),Component.text("§7完了したらここをクリックしてください")));
                 }
                 break;
             case 2:
                 if(processF>=2) {
                     for (int i = 41; i < 45; i++) {
                         if (i % 9 <= 6)
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, Component.text("§c§l承認しない"), Component.text("§7これでいいですか？")));
                         else
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認する"), Component.text("§7これでいいですか？")));
                     }
                     for (int i = 50; i < 54; i++) {
                         if (i % 9 <= 6)
-                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "§c§l承認しない", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.YELLOW_STAINED_GLASS_PANE, 1,  Component.text("§c§l承認しない"), Component.text("§7これでいいですか？")));
                         else
-                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認する", "§7これでいいですか？"));
+                            inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認する"), Component.text("§7これでいいですか？")));
                     }
                 }else {
                     for (int i = 41; i < 45; i++) {
-                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§lOK!", "§7完了(クリックしてキャンセル)"));
+                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§lOK!"), Component.text("§7完了(クリックしてキャンセル)")));
                     }
                     for (int i = 50; i < 54; i++) {
-                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§lOK!", "§7完了(クリックしてキャンセル)"));
+                        inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§lOK!"), Component.text("§7完了(クリックしてキャンセル)")));
                     }
                 }
                 break;
             case 3:
                 for (int i = 41; i < 45; i++) {
-                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認!", "§7取引を認めました"));
+                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認!"), Component.text("§7取引を認めました")));
                 }
                 for (int i = 50; i < 54; i++) {
-                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, "§a§l承認!", "§7取引を認めました"));
+                    inventory.setItem(i, getItem(Material.GREEN_STAINED_GLASS_PANE, 1, Component.text("§a§l承認!"), Component.text("§7取引を認めました")));
                 }
                 break;
         }
@@ -329,18 +333,18 @@ public class MatchSystem {
         return chat.contains(p);
     }
 
-    public void chat(Player p,String msg){
+    public void chat(Player p, Component msg){
         if(!isChatting(p))return;
         final MatchSystem ms1 = getMatchF(p);
         try {
             if (ms1 != null) {
-                fromMoney = Integer.parseInt(msg);
-                if(fromMoney>it.vault.getBalance(p.getUniqueId())) {
+                fromMoney = Integer.parseInt(PlainTextComponentSerializer.plainText().serialize(msg));
+                if(fromMoney>it.vault.getBal(p.getUniqueId())) {
                     p.sendMessage(prefix+"§c§l必要なお金を持っていません！");
                     return;
                 }
                 if(fromMoney != 0)
-                    inventory.setItem(28,getItem(Material.GOLD_NUGGET,1,"§6§l"+msg+"円","§7提示しています"));
+                    inventory.setItem(28,getItem(Material.GOLD_NUGGET,1,Component.text("§6§l"+msg+"円"),Component.text("§7提示しています")));
                 else
                     inventory.clear(28);
                 new BukkitRunnable() {
@@ -354,13 +358,13 @@ public class MatchSystem {
             }
             final MatchSystem ms2 = getMatchT(p);
             if (ms2 != null) {
-                toMoney = Integer.parseInt(msg);
-                if(fromMoney>it.vault.getBalance(p.getUniqueId())) {
+                toMoney = Integer.parseInt(PlainTextComponentSerializer.plainText().serialize(msg));
+                if(fromMoney>it.vault.getBal(p.getUniqueId())) {
                     p.sendMessage(prefix+"§c§l必要なお金を持っていません！");
                     return;
                 }
                 if(toMoney != 0)
-                    inventory.setItem(33,getItem(Material.GOLD_NUGGET,1,"§6§l"+msg+"円","§7提示しています"));
+                    inventory.setItem(33,getItem(Material.GOLD_NUGGET,1,Component.text("§6§l"+msg+"円"),Component.text("§7提示しています")));
                 else
                     inventory.clear(33);
                 new BukkitRunnable() {
@@ -407,10 +411,10 @@ public class MatchSystem {
                 to.getInventory().addItem(inventory.getItem(i));
             }
         }
-        it.vault.withdraw(from.getUniqueId(),fromMoney);
-        it.vault.deposit(to.getUniqueId(),fromMoney);
-        it.vault.withdraw(to.getUniqueId(),toMoney);
-        it.vault.deposit(from.getUniqueId(),toMoney);
+        it.vault.withdraw(from,fromMoney);
+        it.vault.deposit(to,fromMoney);
+        it.vault.withdraw(to,toMoney);
+        it.vault.deposit(from,toMoney);
         from.sendMessage(prefix+"§a§l取引が成立しました！");
         to.sendMessage(prefix+"§a§l取引が成立しました！");
         matchList.remove(this);

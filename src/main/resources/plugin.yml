@@ -1,7 +1,7 @@
 name: ItemTrader
 version: ${project.version}
 main: com.gmail.supergame314.itemtrader.ItemTrader
-api-version: 1.13
+api-version: 1.19
 authors: [Super__Game]
 commands:
   trade:
