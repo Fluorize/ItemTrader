@@ -81,11 +81,12 @@ public final class ItemTrader extends JavaPlugin implements Listener {
                     return true;
                 }
                 if(p==target){
-                    sender.sendMessage(prefix+" §c§l自分と取引することはできません");
+                    sender.sendMessage(prefix+" §c§l自分と取引することはできません！");
                     return true;
                 }
                 new MatchSystem(p,target);
                 ask(p,target);
+                sender.sendMessage(prefix+" §a§l取引に誘いました。");
             }
         }
         return true;
@@ -154,7 +155,7 @@ public final class ItemTrader extends JavaPlugin implements Listener {
     // https://www.spigotmc.org/threads/api-for-parsing-a-text-component.512539/
     void ask(Player p,Player target){
         Component text =
-                MiniMessage.miniMessage().deserialize(prefix + "<reset><gold><bold>" + p.getName() + "に取引に誘われました。 <green><BOLD><UNDERLINED>[応じる]<hover:show_text:'クリックで応じる'><click:run_command: 'trade acc'><reset> <red><BOLD><UNDERLINED>[断る]<hover:show_text:'クリックで断る'><click:run_command: 'trade ref'>");
+                MiniMessage.miniMessage().deserialize("<gold><bold>" + p.getName() + "に取引に誘われました。<reset> <green><bold><underlined><hover:show_text:'クリックで応じる'><click:run_command:/trade acc>[応じる]<reset> <red><bold><underlined><hover:show_text:'クリックで断る'><click:run_command:/trade ref>[断る]<reset>");
         target.sendMessage(text);
     }
 
